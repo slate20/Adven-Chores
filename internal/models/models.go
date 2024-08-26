@@ -10,6 +10,7 @@ type Chore struct {
 	Points      int
 	IsRequired  bool
 	DueDate     time.Time
+	IsCompleted bool
 }
 
 type Child struct {

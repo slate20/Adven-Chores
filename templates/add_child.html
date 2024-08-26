@@ -1,0 +1,7 @@
+<h3>Add Child</h3>
+<form hx-post="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+    <button type="submit">Add Child</button>
+    <button type="button" hx-get="/child-action" hx-target="#child-action-container" hx-swap="innerHTML">Cancel</button>
+</form>

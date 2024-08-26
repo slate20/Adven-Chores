@@ -48,15 +48,14 @@ func GetChoreByID(db *sql.DB, id int64) (*Chore, error) {
 }
 
 // function to get all chores from the database
-func GetChores(db *sql.DB) ([]*Chore, error) {
-	query := "SELECT id, description, points, is_required, due_date FROM chores"
-	rows, err := db.Query(query)
+func GetAllChores(db *sql.DB) ([]*Chore, error) {
+	var chores []*Chore
+
+	rows, err := db.Query("SELECT id, description, points, is_required, due_date FROM chores")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-
-	var chores []*Chore
 
 	for rows.Next() {
 		chore := &Chore{}
@@ -64,8 +63,32 @@ func GetChores(db *sql.DB) ([]*Chore, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		chores = append(chores, chore)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return chores, nil
+}
+
+// function to delete a chore from the database
+func DeleteChore(db *sql.DB, id int64) error {
+	result, err := db.Exec("DELETE FROM chores WHERE id = ?", id)
+	if err != nil {
+		return fmt.Errorf("error deleting chore: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error getting rows affected: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no chore found with ID %d", id)
+	}
+
+	return nil
 }

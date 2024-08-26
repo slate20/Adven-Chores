@@ -1,0 +1,16 @@
+<h2>{{.Child.Name}}'s Dashboard</h2>
+<p>Points: {{.Child.Points}}</p>
+
+<h3>Chores</h3>
+<ul>
+    {{range .Chores}}
+        <li>
+            {{.Description}} ({{.Points}} points)
+            {{if not .IsCompleted}}
+                <button hx-post="/complete-chore/{{.ID}}" hx-target="closest li">Complete</button>
+            {{else}}
+                Completed
+            {{end}}
+        </li>
+    {{end}}
+</ul>

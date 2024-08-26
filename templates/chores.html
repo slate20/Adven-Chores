@@ -1,0 +1,26 @@
+<table>
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>Points</th>
+            <th>Required</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range . }}
+        <tr>
+            <td>{{ .Description }}</td>
+            <td>{{ .Points }}</td>
+            <td>{{if .IsRequired}}Yes{{else}}No{{end}}</td>
+            <td>{{ .DueDate }}</td>
+            <td>
+                <button hx-get="/chores/{{ .ID }}/edit" hx-target="closest tr">Edit</button>
+                <button hx-delete="/chores/{{ .ID }}" hx-target="closest tr">Delete</button>
+            </td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+<button hx-get="/chores/new" hx-target="#content">Add New Chore</button>

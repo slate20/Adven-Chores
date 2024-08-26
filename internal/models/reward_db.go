@@ -46,3 +46,46 @@ func GetRewardByID(db *sql.DB, id int64) (*Reward, error) {
 
 	return reward, nil
 }
+
+// function to get all rewards from the database
+func GetAllRewards(db *sql.DB) ([]*Reward, error) {
+	query := "SELECT id, description, point_cost FROM rewards"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rewards []*Reward
+	for rows.Next() {
+		reward := &Reward{}
+		err := rows.Scan(&reward.ID, &reward.Description, &reward.PointCost)
+		if err != nil {
+			return nil, err
+		}
+		rewards = append(rewards, reward)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return rewards, nil
+}
+
+// function to delete a reward from the database
+func DeleteReward(db *sql.DB, id int64) error {
+	result, err := db.Exec("DELETE FROM rewards WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no reward found with ID %d", id)
+	}
+
+	return nil
+}

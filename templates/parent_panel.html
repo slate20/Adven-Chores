@@ -1,0 +1,47 @@
+<h2>Parent Panel</h2>
+
+<section id="children-section">
+    <h3>Children</h3>
+    <ul id="child-list" hx-trigger="refreshList from:body" hx-get="/child-list" hx-target="this">
+        {{template "child_list.html" .Children}}
+    </ul>
+    <div id="child-action-container">
+        <!-- Forms for adding/editing children will be swapped here -->
+        <button id="add-child-button" hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>
+    </div> 
+</section>
+
+<section>
+    <h3>Chores</h3>
+    <ul>
+        {{range .Chores}}
+        <li>
+            {{.Description}} - Points: {{.Points}}
+            <button hx-get="/edit-chores/{{.ID}}" hx-target="#chore-edit-form" hx-swap="innerHTML">Edit</button>
+            <button hx-delete="/delete-chores/{{.ID}}" hx-confirm="Are you sure you want to delete this chore?">Delete</button>
+        </li>
+        {{end}}
+    </ul>
+    <div id="chore-edit-form">
+        <!-- Forms for adding/editing chores will be added here -->
+    </div>
+    <button hx-get="/add-chore" hx-target="#chore-edit-form">Add Chore</button>
+</section>
+
+<section>
+    <h3>Rewards</h3>
+    <ul>
+        {{range .Rewards}}
+        <li>
+            {{.Description}} - Points: {{.Points}}
+            <button hx-get="/edit-reward/{{.ID}}" hx-target="#reward-edit-form" hx-swap="innerHTML">Edit</button>
+            <button hx-delete="/delete-reward/{{.ID}}" hx-confirm="Are you sure you want to delete this reward?">Delete</button>
+        </li>
+        {{end}}
+    </ul>
+    <div id="reward-edit-form">
+        <!-- Forms for adding/editing rewards will be added here -->
+    </div>
+    <button hx-get="/add-reward" hx-target="#reward-edit-form">Add Reward</button>
+</section>
+

@@ -11,7 +11,7 @@ import (
 
 var DB *sql.DB
 
-func InitDB() {
+func InitDB() (*sql.DB, error) {
 	// Get the user's home directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -45,6 +45,8 @@ func InitDB() {
 
 	// Initialize the database
 	initTables()
+
+	return db, nil
 }
 
 func initTables() {

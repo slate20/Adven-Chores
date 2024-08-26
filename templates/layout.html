@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Adven-Chores</title>
+        <link rel="stylesheet" href="../static/styles.css">
+        <script src="https://unpkg.com/htmx.org@2.0.1"></script>
+    </head>
+    <body>
+        <nav>
+            <h2>Adven-Chores</h2>
+            <ul id="child-nav">
+                <!-- This will be populated dynamically -->
+            </ul>
+            <button hx-get="/rewards" hx-target="#content">Rewards Store</button>
+            <button hx-get="/parent-panel" hx-target="#content" hx-swap="innerHTML">Parent Panel</button>
+        </nav>
+        <div id="content">
+            <!-- Content will be loaded here-->
+        </div>
+
+        <script>
+            document.body.addEventListener('htmx:afterSettle', function(event) {
+                if (event.detail.target.id === 'child-list') {
+                    // Select the first child by default
+                    const firstChild = document.querySelector('#child-list li:first-child a');
+                    if (firstChild) {
+                        firstChild.click();
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
