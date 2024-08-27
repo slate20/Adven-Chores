@@ -1,0 +1,19 @@
+<h3>Assign Chore</h3>
+<form hx-post="/assign-chore" hx-swap="innerHTML" hx-target="#assignment-action-container">
+    <label for="child_id">Child:</label>
+    <select name="child_id" id="child_id" required>
+        {{ range .Children }}
+            <option value="{{ .ID }}">{{ .Name }}</option>
+        {{ end }}
+    </select>
+
+    <label for="chore_id">Chore:</label>
+    <select name="chore_id" id="chore_id" required>
+        {{ range .Chores }}
+            <option value="{{ .ID }}">{{ .Description }} ({{ .Points }} points)</option>
+        {{ end }}
+    </select>
+
+    <button type="submit">Assign Chore</button>
+    <button type="button" hx-get="/assignment-action" hx-target="#assignment-action-container" hx-swap="innerHTML">Cancel</button>
+</form>

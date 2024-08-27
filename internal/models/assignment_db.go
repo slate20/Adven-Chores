@@ -48,26 +48,27 @@ func GetAssignmentByID(db *sql.DB, id int64) (*Assignment, error) {
 }
 
 // function to get all assignments from the database
-func GetAllAssignments(db *sql.DB) ([]*Assignment, error) {
-	var assignments []*Assignment
+func GetAllAssignments(db *sql.DB) ([]*AssignmentDisplay, error) {
+	query := `
+		SELECT a.id, c.name, ch.description, a.is_completed
+		FROM assignments a
+		JOIN children c ON a.child_id = c.id
+		JOIN chores ch ON a.chore_id = ch.id`
 
-	rows, err := db.Query("SELECT id, child_id, chore_id, is_completed FROM assignments")
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	var assignments []*AssignmentDisplay
 	for rows.Next() {
-		assignment := &Assignment{}
-		err := rows.Scan(&assignment.ID, &assignment.ChildID, &assignment.ChoreID, &assignment.IsCompleted)
+		a := &AssignmentDisplay{}
+		err := rows.Scan(&a.ID, &a.ChildName, &a.ChoreName, &a.IsCompleted)
 		if err != nil {
 			return nil, err
 		}
-		assignments = append(assignments, assignment)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
+		assignments = append(assignments, a)
 	}
 
 	return assignments, nil
@@ -235,7 +236,7 @@ func GetChoresByChild(db *sql.DB, childID int64) ([]*Chore, error) {
 
 	// join the assignments and chores tables
 	query := `
-		SELECT c.id, c.description, c.points, c.is_required, c.due_date, a.is_completed
+		SELECT c.id, c.description, c.points, c.is_required, a.is_completed
 		FROM chores c
 		JOIN assignments a ON c.id = a.chore_id
 		WHERE a.child_id = ?
@@ -251,7 +252,7 @@ func GetChoresByChild(db *sql.DB, childID int64) ([]*Chore, error) {
 	for rows.Next() {
 		chore := &Chore{}
 		var isCompleted bool
-		err := rows.Scan(&chore.ID, &chore.Description, &chore.Points, &chore.IsRequired, &chore.DueDate, &isCompleted)
+		err := rows.Scan(&chore.ID, &chore.Description, &chore.Points, &chore.IsRequired, &isCompleted)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %v", err)
 		}

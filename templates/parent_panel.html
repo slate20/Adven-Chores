@@ -11,21 +11,25 @@
     </div> 
 </section>
 
-<section>
+<section id="chores-section">
     <h3>Chores</h3>
-    <ul>
-        {{range .Chores}}
-        <li>
-            {{.Description}} - Points: {{.Points}}
-            <button hx-get="/edit-chores/{{.ID}}" hx-target="#chore-edit-form" hx-swap="innerHTML">Edit</button>
-            <button hx-delete="/delete-chores/{{.ID}}" hx-confirm="Are you sure you want to delete this chore?">Delete</button>
-        </li>
-        {{end}}
+    <ul id="chore-list" hx-trigger="refreshChoreList from:body" hx-get="/chore-list" hx-target="this">
+        {{template "chore_list.html" .Chores}}
     </ul>
-    <div id="chore-edit-form">
+    <div id="chore-action-container">
         <!-- Forms for adding/editing chores will be added here -->
+        <button id="add-chore-button" hx-get="/add-chore" hx-target="#chore-action-container" hx-swap="innerHTML">Add Chore</button>
     </div>
-    <button hx-get="/add-chore" hx-target="#chore-edit-form">Add Chore</button>
+</section>
+
+<section id="assignments-section">
+    <h3>Chore Assignments</h3>
+    <ul id="assignments-list" hx-trigger="refreshAssignments from:body" hx-get="/assignments-list" hx-target="this">
+        {{template "assignments_list.html" .Assignments}}
+    </ul>
+    <div id="assignment-action-container">
+        <button hx-get="/assign-chore-form" hx-target="#assignment-action-container" hx-swap="innerHTML">New Assignment</button>
+    </div>
 </section>
 
 <section>

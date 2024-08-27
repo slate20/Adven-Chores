@@ -21,6 +21,12 @@ func ParentPanelHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		assignments, err := models.GetAllAssignments(db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		rewards, err := models.GetAllRewards(db)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -28,16 +34,23 @@ func ParentPanelHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		data := struct {
-			Children []*models.Child
-			Chores   []*models.Chore
-			Rewards  []*models.Reward
+			Children    []*models.Child
+			Chores      []*models.Chore
+			Assignments []*models.AssignmentDisplay
+			Rewards     []*models.Reward
 		}{
-			Children: children,
-			Chores:   chores,
-			Rewards:  rewards,
+			Children:    children,
+			Chores:      chores,
+			Assignments: assignments,
+			Rewards:     rewards,
 		}
 
-		tmpl, err := template.ParseFiles("../../templates/parent_panel.html", "../../templates/child_list.html")
+		tmpl, err := template.ParseFiles(
+			"../../templates/parent_panel.html",
+			"../../templates/child_list.html",
+			"../../templates/chore_list.html",
+			"../../templates/assignments_list.html",
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

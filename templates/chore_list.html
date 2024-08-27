@@ -1,0 +1,12 @@
+{{range .}}
+<li>
+    {{.Description}} - Points: {{.Points}} - Required: {{if .IsRequired}}Yes{{else}}No{{end}}
+    <button hx-get="/edit-chore/{{.ID}}" hx-target="#chore-action-container" hx-swap="innerHTML">Edit</button>
+    <button hx-delete="/delete-chore/{{.ID}}"
+        hx-confirm="Are you sure you want to delete this chore?"
+        hx-target="closest li"
+        hx-swap="outerHTML"
+        hx-on::after-request="htmx.trigger('#chore-list', 'refreshChoreList')">Delete</button>
+</li>
+{{end}}
+    

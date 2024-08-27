@@ -18,15 +18,16 @@ func InitDB() (*sql.DB, error) {
 		log.Fatal(err)
 	}
 
-	// Create a ChoreQuest directory in the user's home directory
-	dbDir := filepath.Join(homeDir, "ChoreQuest")
+	// Create an Adven-Chores directory in the user's home directory
+	dbDir := filepath.Join(homeDir, "Adven-Chores")
 	err = os.MkdirAll(dbDir, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Create the database path
-	dbPath := filepath.Join(dbDir, "chorequest.db")
+	dbPath := filepath.Join(dbDir, "advenchores.db")
+	log.Printf("Database path: %s", dbPath)
 
 	// Open the database
 	db, err := sql.Open("sqlite3", dbPath)
@@ -57,7 +58,7 @@ func initTables() {
 		description TEXT NOT NULL,
 		points INTEGER NOT NULL,
 		is_required BOOLEAN NOT NULL,
-		due_date TEXT
+		is_completed BOOLEAN NOT NULL DEFAULT 0
 	);`
 
 	_, err := DB.Exec(createChoresTable)

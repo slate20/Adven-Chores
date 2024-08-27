@@ -1,15 +1,10 @@
 package models
 
-import (
-	"time"
-)
-
 type Chore struct {
 	ID          int64
 	Description string
 	Points      int
 	IsRequired  bool
-	DueDate     time.Time
 	IsCompleted bool
 }
 
@@ -30,5 +25,12 @@ type Assignment struct {
 	ID          int64
 	ChildID     int64
 	ChoreID     int64
+	IsCompleted bool
+}
+
+type AssignmentDisplay struct {
+	ID          int64
+	ChildName   string
+	ChoreName   string
 	IsCompleted bool
 }
