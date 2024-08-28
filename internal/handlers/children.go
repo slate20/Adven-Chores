@@ -33,36 +33,58 @@ func ChildListHandler(db *sql.DB) http.HandlerFunc {
 
 func ChildDashboardHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Exrtract the child ID from the URL path
-		paths := strings.Split(r.URL.Path, "/")
-		if len(paths) < 3 {
-			http.Error(w, "Invalid URL path", http.StatusBadRequest)
-			return
-		}
-		childID, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
+		idStr := r.URL.Path[len("/child-dashboard/"):]
+		id, err := strconv.ParseInt(idStr, 10, 64)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, "Invalid child ID", http.StatusBadRequest)
 			return
 		}
 
-		child, err := models.GetChildByID(db, childID)
+		child, err := models.GetChildByID(db, id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		chores, err := models.GetChoresByChild(db, childID)
+		chores, err := models.GetAllChores(db)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		assignments, err := models.GetAllAssignments(db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		childAssignments, err := models.GetAssignmentsByChild(db, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// create a map of assigned chore IDs and filter to get only unassigned chores
+		assignedChores := make(map[int64]bool)
+		for _, assignment := range assignments {
+			assignedChores[assignment.Chore.ID] = true
+		}
+
+		var availableChores []*models.Chore
+		for _, chore := range chores {
+			if !assignedChores[chore.ID] {
+				availableChores = append(availableChores, chore)
+			}
 		}
 
 		data := struct {
-			Child  *models.Child
-			Chores []*models.Chore
+			Child           *models.Child
+			Assignments     []*models.Assignment
+			AvailableChores []*models.Chore
 		}{
-			Child:  child,
-			Chores: chores,
+			Child:           child,
+			Assignments:     childAssignments,
+			AvailableChores: availableChores,
 		}
 
 		tmpl, err := template.ParseFiles("../../templates/child_dashboard.html")
@@ -97,10 +119,11 @@ func AddChildHandler(db *sql.DB) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+
 			// Trigger refresh and return the Add Child button
 			w.Header().Set("HX-Trigger", "refreshList")
 			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(`<button hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>`))
+			w.Write([]byte(`<button class="action-button" hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>`))
 		}
 	}
 }
@@ -136,21 +159,23 @@ func EditChildHandler(db *sql.DB) http.HandlerFunc {
 		} else if r.Method == http.MethodPost {
 			name := r.FormValue("name")
 			points, err := strconv.Atoi(r.FormValue("points"))
+			rewards := r.FormValue("rewards")
 			if err != nil {
 				http.Error(w, "Invalid points value", http.StatusBadRequest)
 				return
 			}
 
-			child := &models.Child{ID: id, Name: name, Points: points}
+			child := &models.Child{ID: id, Name: name, Points: points, Rewards: rewards}
 			err = child.Save(db)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+
 			// Trigger refresh and return the Add Child button
 			w.Header().Set("HX-Trigger", "refreshList")
 			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(`<button hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>`))
+			w.Write([]byte(`<button class="action-button" hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>`))
 		}
 	}
 }
@@ -174,13 +199,18 @@ func DeleteChildHandler(db *sql.DB) http.HandlerFunc {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+
 		}
+
+		// Trigger refresh
+		w.Header().Set("HX-Trigger", "refreshList")
+		w.Header().Set("Content-Type", "text/html")
 	}
 }
 
 func ChildActionHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(`<button hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>`))
+		w.Write([]byte(`<button class="action-button" hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>`))
 	}
 }

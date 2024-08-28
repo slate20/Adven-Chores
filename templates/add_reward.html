@@ -1,0 +1,9 @@
+<h4>Add Reward</h4>
+<form hx-post="/add-reward" hx-target="#reward-action-container" hx-swap="innerHTML">
+    <label for="description">Description:</label>
+    <input type="text" id="description" name="description" required>
+    <label for="points-cost">Points Cost:</label>
+    <input type="number" id="point-cost" name="point-cost" required>
+    <button type="submit">Add Reward</button>
+    <button type="button" hx-get="/reward-action" hx-target="#reward-action-container" hx-swap="innerHTML">Cancel</button>
+</form>

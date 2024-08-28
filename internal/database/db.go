@@ -71,6 +71,7 @@ func initTables() {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		job TEXT NOT NULL,
+		rewards STRING,
 		points INTEGER DEFAULT 0
 	);`
 

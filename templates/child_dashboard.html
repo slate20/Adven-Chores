@@ -1,16 +1,38 @@
 <h2>{{.Child.Name}}'s Dashboard</h2>
-<p>Points: {{.Child.Points}}</p>
-
-<h3>Chores</h3>
-<ul>
-    {{range .Chores}}
-        <li>
-            {{.Description}} ({{.Points}} points)
-            {{if not .IsCompleted}}
-                <button hx-post="/complete-chore/{{.ID}}" hx-target="closest li">Complete</button>
-            {{else}}
-                Completed
-            {{end}}
-        </li>
-    {{end}}
-</ul>
+<div class="dashboard-point-header">
+<p>Points: {{.Child.Points}}</p><a class="reward-store-btn" id="rewards" href="#" hx-get="/rewards-store/{{.Child.ID}}" hx-target="#content">Rewards Store</a>
+</div>
+<section id="chore-list-section">
+    <h3>My Assigned Chores</h3>
+    <ul id="child-chore-list" hx-trigger="refreshChildDashboard from:body" hx-get="/child-dashboard/{{.Child.ID}}" hx-target="#content">
+        {{range .Assignments}}
+            <li>
+                {{if .Chore.IsRequired}}🚩{{end}}{{.Chore.Description}} ({{.Chore.Points}} points)
+                {{if not .IsCompleted}}
+                    <button id="complete-chore-btn" hx-post="/complete-chore/{{.ID}}" hx-target="closest li" hx-swap="outerHTML">Complete</button>
+                {{else}}
+                    Completed
+                {{end}}
+            </li>
+        {{end}}
+    </ul>
+</section>
+<section id="available-chores-section">
+    <h3>Available Chores</h3>
+    <ul id="child-available-chore-list" hx-trigger="refreshChildDashboard from:body" hx-get="/child-dashboard/{{.Child.ID}}" hx-target="#content">
+        {{ $childID := .Child.ID }}
+        {{range .AvailableChores}}
+            <li>
+                {{.Description}} ({{.Points}} points)
+                <button id="accept-chore-btn" hx-post="/accept-chore/{{$childID}}/{{.ID}}">Accept</button>
+            </li>
+        {{end}}
+    </ul>
+<section id="reward-list-section">
+    <h3>My Rewards</h3>
+    <ul id="child-reward-list" hx-trigger="refreshChildDashboard from:body" hx-get="/child-dashboard/{{.Child.ID}}" hx-target="#content">
+            <li>
+                {{.Child.Rewards}}
+            </li>
+    </ul>
+</section>

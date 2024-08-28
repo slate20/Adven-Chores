@@ -1,0 +1,11 @@
+<h3>Edit Child</h3>
+<form hx-post="/edit-child/{{.ID}}" hx-target="#child-action-container" hx-swap="innerHTML">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="{{.Name}}" required>
+    <label for="points">Points:</label>
+    <input type="number" id="points" name="points" value="{{.Points}}" required>
+    <label for="rewards">Rewards:</label>
+    <input type="text" id="rewards" name="rewards" value="{{.Rewards}}">
+    <button type="submit">Update Child</button>
+    <button type="button" hx-get="/child-action" hx-target="#child-action-container" hx-swap="innerHTML">Cancel</button>
+</form>

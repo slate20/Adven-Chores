@@ -7,7 +7,7 @@
     </ul>
     <div id="child-action-container">
         <!-- Forms for adding/editing children will be swapped here -->
-        <button id="add-child-button" hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>
+        <button class="action-button" id="add-child-button" hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>
     </div> 
 </section>
 
@@ -18,7 +18,7 @@
     </ul>
     <div id="chore-action-container">
         <!-- Forms for adding/editing chores will be added here -->
-        <button id="add-chore-button" hx-get="/add-chore" hx-target="#chore-action-container" hx-swap="innerHTML">Add Chore</button>
+        <button class="action-button" id="add-chore-button" hx-get="/add-chore" hx-target="#chore-action-container" hx-swap="innerHTML">Add Chore</button>
     </div>
 </section>
 
@@ -28,24 +28,16 @@
         {{template "assignments_list.html" .Assignments}}
     </ul>
     <div id="assignment-action-container">
-        <button hx-get="/assign-chore-form" hx-target="#assignment-action-container" hx-swap="innerHTML">New Assignment</button>
+        <button class="action-button" hx-get="/assign-chore-form" hx-target="#assignment-action-container" hx-swap="innerHTML">New Assignment</button>
     </div>
 </section>
 
 <section>
     <h3>Rewards</h3>
-    <ul>
-        {{range .Rewards}}
-        <li>
-            {{.Description}} - Points: {{.Points}}
-            <button hx-get="/edit-reward/{{.ID}}" hx-target="#reward-edit-form" hx-swap="innerHTML">Edit</button>
-            <button hx-delete="/delete-reward/{{.ID}}" hx-confirm="Are you sure you want to delete this reward?">Delete</button>
-        </li>
-        {{end}}
+    <ul id="reward-list" hx-trigger="refreshRewardList from:body" hx-get="/reward-list" hx-target="this">
+        {{template "reward_list.html" .Rewards}}
     </ul>
-    <div id="reward-edit-form">
-        <!-- Forms for adding/editing rewards will be added here -->
+    <div id="reward-action-container">
+        <button class="action-button" hx-get="/add-reward" hx-target="#reward-action-container" hx-swap="innerHTML">Add Reward</button>
     </div>
-    <button hx-get="/add-reward" hx-target="#reward-edit-form">Add Reward</button>
 </section>
-

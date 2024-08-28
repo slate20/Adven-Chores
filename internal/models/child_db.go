@@ -9,8 +9,8 @@ import (
 func (c *Child) Save(db *sql.DB) error {
 	// If the child is new, insert it
 	if c.ID == 0 {
-		result, err := db.Exec("INSERT INTO children (name, job, points) VALUES (?, ?, ?)",
-			c.Name, c.Job, c.Points)
+		result, err := db.Exec("INSERT INTO children (name, job, points, rewards) VALUES (?, ?, ?, ?)",
+			c.Name, c.Job, c.Points, c.Rewards)
 		if err != nil {
 			return err
 		}
@@ -21,8 +21,8 @@ func (c *Child) Save(db *sql.DB) error {
 		}
 	} else {
 		// If the child is not new, update it
-		_, err := db.Exec("UPDATE children SET name = ?, job = ?, points = ? WHERE id = ?",
-			c.Name, c.Job, c.Points, c.ID)
+		_, err := db.Exec("UPDATE children SET name = ?, job = ?, points = ?, rewards = ? WHERE id = ?",
+			c.Name, c.Job, c.Points, c.Rewards, c.ID)
 		if err != nil {
 			return err
 		}
@@ -32,11 +32,11 @@ func (c *Child) Save(db *sql.DB) error {
 
 // function to get a child by ID from the database
 func GetChildByID(db *sql.DB, id int64) (*Child, error) {
-	query := "SELECT id, name, job, points FROM children WHERE id = ?"
+	query := "SELECT id, name, job, points, rewards FROM children WHERE id = ?"
 	row := db.QueryRow(query, id)
 
 	child := &Child{}
-	err := row.Scan(&child.ID, &child.Name, &child.Job, &child.Points)
+	err := row.Scan(&child.ID, &child.Name, &child.Job, &child.Points, &child.Rewards)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("no child found with ID %d", id)
@@ -51,7 +51,7 @@ func GetChildByID(db *sql.DB, id int64) (*Child, error) {
 func GetAllChildren(db *sql.DB) ([]*Child, error) {
 	var children []*Child
 
-	rows, err := db.Query("SELECT id, name, job, points FROM children")
+	rows, err := db.Query("SELECT id, name, job, points, rewards FROM children")
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func GetAllChildren(db *sql.DB) ([]*Child, error) {
 
 	for rows.Next() {
 		child := &Child{}
-		err := rows.Scan(&child.ID, &child.Name, &child.Job, &child.Points)
+		err := rows.Scan(&child.ID, &child.Name, &child.Job, &child.Points, &child.Rewards)
 		if err != nil {
 			return nil, err
 		}

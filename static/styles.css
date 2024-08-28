@@ -1,16 +1,291 @@
-body {
-    display: flex;
+/* Basic reset and font settings */
+* {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    box-sizing: border-box;
 }
-nav {
-    width: 200px;
-    background-color: #f0f0f0;
-    padding: 20px;
+
+body {
+    font-family: 'Bubblegum Sans', sans-serif;
+    background-color: #e1f1ff;  /* Light blue background */
+    color: #333;
+    display: flex;
     height: 100vh;
+    margin: 0;
+    overflow: hidden;
 }
+
+/* App container */
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Side navigation */
+.side-nav {
+    width: 300px;
+    height: 100vh;
+    background-color: #2b99e2;  /* Vibrant blue */
+    padding: 10px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.app-title {
+    font-size: 28px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.logo {
+    margin-top: 30px;
+    width: 250px;
+    margin-bottom: 60px;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+}
+
+.side-nav #child-nav {
+    flex-grow: 1;
+}
+
+.side-nav #child-nav a {
+    display: block;
+    padding: 10px;
+    margin-bottom: 10px;
+    width: 200px;
+    background-color: #ebb400;  /* Gold */
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    color: #09334e;
+    transition: background-color 0.3s;
+}
+
+.side-nav #child-nav a:hover {
+    background-color: #fccb2c;  /* Lighter gold on hover */
+}
+
+.nav-item {
+    display: block;
+    padding: 10px;
+    width: 200px;
+    margin-bottom: 10px;
+    background-color: #51a9e4;  /* Lighter blue */
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.nav-item:hover {
+    background-color: #7dbaf2;  /* Even lighter blue on hover */
+}
+
+#parent-panel {
+    margin-top: auto;
+    width: 200px;
+    padding: 10px;
+    background-color: #51a9e4;  /* Lighter blue */
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+#parent-panel:hover {
+    background-color: #7dbaf2;  /* Even lighter blue on hover */
+}
+
+/* Main content area */
 #content {
     flex-grow: 1;
+    padding: 20px 5%;
+    background-color: white;
+    border-radius: 10px;
+    margin: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    overflow: auto;
+}
+
+/* Fantasy-themed elements */
+h1 {
+    color: #fff;
+    margin-bottom: 40px;
+}
+
+h2 {
+    font-size: 32px;
+    color: #222;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+h3 {
+    color: #124b72;  /* Dark Blue */
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+h4 {
+    font-family: "Fredoka", sans-serif;
+    font-size: 18px;
+    color: #222;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+label {
+    font-family: "Fredoka", sans-serif;
+    font-size: 16px;
+    color: #222;
+    margin-bottom: 10px;
+    margin-right: 10px;
+}
+
+p {
+    font-family: "Fredoka", sans-serif;
+    font-size: 16px;
+    color: #222;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: transparent;
+    border: none;
+    color: #222;  /* Dark Blue */
+    font-family: "Fredoka", sans-serif;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 10px;
+}
+
+button:hover {
+    color: #2b99e2;
+}
+
+/* Fun, fantasy-themed list styling */
+ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+ul li {
+    background-color: #e6f4fa;  /* Light blue */
+    margin-bottom: 10px;
+    font-family: "Fredoka", sans-serif;
+    font-size: 18px;
+    width: 100%;
     padding: 20px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+}
+
+#complete-chore-btn {
+    background-color: #fccb2c;  /* Gold */
+    color: #09334e;
+}
+
+#complete-chore-btn:hover {
+    background-color: #fce254;  /* Light golden */
+    color: #09334e;
+}
+
+.action-button {
+    display: block;
+    margin: 10px 20px 20px auto;
+    background-color: #fccb2c;  /* Gold */
+    color: #09334e;
+}
+
+.action-button:hover {
+    background-color: #fce254;  /* Light golden */
+    color: #09334e;
+}
+
+/* Rewards store styles */
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-gap: 20px; 
+}
+
+.reward-card {
+    background-color: #f0f0f0;  /* Light blue */
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.reward-store-btn {
+    display: block;
+    padding: 5px;
+    width: 140px;
+    margin-bottom: 10px;
+    background-color: #51a9e4;  /* Lighter blue */
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.reward-store-btn:hover {
+    background-color: #7dbaf2;  /* Even lighter blue on hover */
+}
+
+/* Dashboard styles */
+dashboard-point-header {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* Add some whimsical touches */
+.app-title::before,
+.app-title::after {
+    content: "✨";
+    margin: 0 10px;
+}
+
+#parent-panel::before {
+    content: "🗝️";
+    margin-right: 10px;
+}
+
+#rewards::before {
+    content: "🎁";
+    margin-right: 10px;
 }

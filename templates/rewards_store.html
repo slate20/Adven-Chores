@@ -1,0 +1,19 @@
+<h2>Rewards Store for {{.Child.Name}}</h2>
+<p>Available points: {{.Child.Points}}</p>
+
+<div class="rewards-grid">
+    {{range .Rewards}}
+        <div class="reward-card">
+            <h3>{{.Description}}</h3>
+            <p>Price: {{.PointCost}} points</p>
+            {{if ge $.Child.Points .PointCost}}
+                <button id="redeem-reward-btn"
+                    hx-post="/redeem-reward/"
+                    hx-vals='{"child_id": "{{$.Child.ID}}", "reward_id": "{{.ID}}"}'
+                    hx-target="#content">Buy</button>
+            {{else}}
+                <p>Not enough points</p>
+            {{end}}
+        </div>
+    {{end}}
+</div>

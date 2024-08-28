@@ -1,0 +1,43 @@
+<h2>Parent Panel</h2>
+
+<section id="children-section">
+    <h3>Children</h3>
+    <ul id="child-list" hx-trigger="refreshList from:body" hx-get="/child-list" hx-target="this">
+        {{template "child_list.html" .Children}}
+    </ul>
+    <div id="child-action-container">
+        <!-- Forms for adding/editing children will be swapped here -->
+        <button class="action-button" id="add-child-button" hx-get="/add-child" hx-target="#child-action-container" hx-swap="innerHTML">Add Child</button>
+    </div> 
+</section>
+
+<section id="chores-section">
+    <h3>Chores</h3>
+    <ul id="chore-list" hx-trigger="refreshChoreList from:body" hx-get="/chore-list" hx-target="this">
+        {{template "chore_list.html" .Chores}}
+    </ul>
+    <div id="chore-action-container">
+        <!-- Forms for adding/editing chores will be added here -->
+        <button class="action-button" id="add-chore-button" hx-get="/add-chore" hx-target="#chore-action-container" hx-swap="innerHTML">Add Chore</button>
+    </div>
+</section>
+
+<section id="assignments-section">
+    <h3>Chore Assignments</h3>
+    <ul id="assignments-list" hx-trigger="refreshAssignments from:body" hx-get="/assignments-list" hx-target="this">
+        {{template "assignments_list.html" .Assignments}}
+    </ul>
+    <div id="assignment-action-container">
+        <button class="action-button" hx-get="/assign-chore-form" hx-target="#assignment-action-container" hx-swap="innerHTML">New Assignment</button>
+    </div>
+</section>
+
+<section>
+    <h3>Rewards</h3>
+    <ul id="reward-list" hx-trigger="refreshRewardList from:body" hx-get="/reward-list" hx-target="this">
+        {{template "reward_list.html" .Rewards}}
+    </ul>
+    <div id="reward-action-container">
+        <button class="action-button" hx-get="/add-reward" hx-target="#reward-action-container" hx-swap="innerHTML">Add Reward</button>
+    </div>
+</section>

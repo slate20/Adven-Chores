@@ -1,0 +1,11 @@
+{{range .}}
+<li>
+    {{.ChildName}} - {{.Chore.Description}}
+    {{if .IsCompleted}}
+        (Completed)
+        <button hx-post="/reward-assignment/{{.ID}}" hx-swap="outerHTML" hx-target="closest li">Reward</button>
+    {{else}}
+        <button hx-delete="/delete-assignment/{{.ID}}" hx-swap="outerHTML" hx-target="closest li">Remove</button>
+    {{end}}
+</li>
+{{end}}

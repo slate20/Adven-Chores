@@ -1,0 +1,11 @@
+<h3>Edit Chore</h3>
+<form hx-post="/edit-chore/{{.ID}}" hx-target="#chore-action-container" hx-swap="innerHTML">
+    <label for="description">Description:</label>
+    <input type="text" id="description" name="description" value="{{.Description}}" required>
+    <label for="points">Points:</label>
+    <input type="number" id="points" name="points" value="{{.Points}}" required>
+    <label for="is_required">Required?</label>
+    <input type="checkbox" id="is_required" name="is_required" {{if .IsRequired}}checked{{end}}>
+    <button type="submit">Update Chore</button>
+    <button type="button" hx-get="/chore-action" hx-target="#chore-action-container" hx-swap="innerHTML">Cancel</button>
+</form>

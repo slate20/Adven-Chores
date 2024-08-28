@@ -1,0 +1,3 @@
+{{range .}}
+    <a href="#" hx-get="/child-dashboard/{{.ID}}" hx-target="#content" hx-swap="innerHTML">{{.Name}}</a>
+{{end}}

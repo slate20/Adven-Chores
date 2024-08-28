@@ -4,21 +4,34 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Adven-Chores</title>
-        <link rel="stylesheet" href="../static/styles.css">
+        <link rel="stylesheet" href="/static/styles.css">
+        <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
         <script src="https://unpkg.com/htmx.org@2.0.1"></script>
-        <script>htmx.logAll();</script>
+        <!-- <script>htmx.logAll();</script> -->
     </head>
     <body>
-        <nav>
-            <h2>Adven-Chores</h2>
-            <ul id="child-nav">
-                <!-- This will be populated dynamically -->
-            </ul>
-            <button hx-get="/rewards" hx-target="#content">Rewards Store</button>
-            <button hx-get="/parent-panel" hx-target="#content" hx-swap="innerHTML">Parent Panel</button>
-        </nav>
-        <div id="content">
-            <!-- Content will be loaded here-->
+        <div class="app-container">
+            <nav class="side-nav">
+                <img class="logo" src="/static/logo.png" alt="Adven-Chores Logo">
+                <div id="child-nav" hx-get="/child-nav" hx-trigger="load, refreshList from:body">
+                    <!-- This will be populated dynamically -->
+                </div>
+                <a class="nav-item" id="parent-panel" hx-prompt="Enter Pin" href="#" hx-get="/parent-panel" hx-target="#content" hx-swap="innerHTML">Parent Panel</a>
+            </nav>
+            <!-- password/pin modal for accessing parent panel -->
+            <div class="modal" id="parent-panel-modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Enter Pin</h2>
+                    <input type="number" id="pin-input">
+                    <button id="pin-submit">Submit</button>
+                </div>
+            </div>
+            <main id="content">
+                <h2 text-align="center">Welcome to Adven-Chores!</h2>
+                <h3 text-align="center" >Select your name from the list to begin</h3>
+                <!-- Content will be loaded here-->
+            </main>
         </div>
 
         <script>

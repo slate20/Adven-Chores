@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Adven-Chores</title>
+        <script src="https://unpkg.com/htmx.org@2.0.1"></script>
+    </head>
+    <body>
+        <h1>Welcome to Adven-Chores</h1>
+        <nav>
+            <ul>
+                <li><a href="#" hx-get="/chores" hx-target="#content">Chores</a></li>
+                <li><a href="#" hx-get="/children" hx-target="#content">Children</a></li>
+                <li><a href="#" hx-get="/assignments" hx-target="#content">Assignments</a></li>
+            </ul>
+        </nav>
+        <div id="content"></div>
+    </body>
+</html>

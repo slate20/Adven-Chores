@@ -1,11 +1,13 @@
 {{range .}}
     <li>
         {{.Name}} - Points: {{.Points}}
-        <button hx-get="/edit-child/{{.ID}}" hx-target="#child-action-container" hx-swap="innerHTML">Edit</button>
-        <button hx-delete="/delete-child/{{.ID}}"
-            hx-confirm="Are you sure you want to delete this child?"
-            hx-target="closest li"
-            hx-swap="outerHTML"
-            hx-on::after-request="htmx.trigger('#child-list', 'refreshList')">Delete</button>
+        <div class="button-group">
+            <button hx-get="/edit-child/{{.ID}}" hx-target="#child-action-container" hx-swap="innerHTML">Edit</button>
+            <button hx-delete="/delete-child/{{.ID}}"
+                hx-confirm="Are you sure you want to delete this child?"
+                hx-target="closest li"
+                hx-swap="outerHTML"
+                hx-on::after-request="htmx.trigger('#child-list', 'refreshList')">Delete</button>
+        </div>
     </li>
 {{end}}
