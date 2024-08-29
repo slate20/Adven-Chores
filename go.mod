@@ -1,4 +1,4 @@
-module ChoreQuest
+module Adven-Chores
 
 go 1.23.0
 

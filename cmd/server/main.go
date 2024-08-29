@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ChoreQuest/internal/database"
-	"ChoreQuest/internal/handlers"
+	"Adven-Chores/internal/database"
+	"Adven-Chores/internal/handlers"
 	"fmt"
 	"net/http"
 )
@@ -49,6 +49,7 @@ func main() {
 	http.HandleFunc("/reward-action", handlers.RewardActionHandler(db))
 	http.HandleFunc("/rewards-store/{child_id}", handlers.RewardsStoreHandler(db))
 	http.HandleFunc("/redeem-reward/", handlers.RedeemRewardHandler(db))
+	http.HandleFunc("/set-pin", handlers.SetPinHandler(db))
 
 	// Start the server
 	fmt.Println("Starting server on port 8080")

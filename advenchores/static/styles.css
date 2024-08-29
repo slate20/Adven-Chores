@@ -219,6 +219,26 @@ ul li {
     color: #09334e;
 }
 
+#set-pin-btn {
+    background-color: #f0f0f0;
+    color: #222;
+    border-radius: 5px;
+}
+
+#set-pin-btn:hover {
+    background-color: #dddddd;
+    color: #222;
+    border-radius: 5px;
+}
+
+#set-pin-container {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+}
+
 .action-button {
     display: block;
     margin: 10px 20px 20px auto;

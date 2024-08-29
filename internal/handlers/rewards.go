@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"ChoreQuest/internal/models"
+	"Adven-Chores/internal/models"
 	"database/sql"
 	"fmt"
 	"html/template"

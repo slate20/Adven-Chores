@@ -1,5 +1,7 @@
 <h2>Parent Panel</h2>
-
+<div id="set-pin-container">
+    <button id="set-pin-btn" hx-get="/set-pin" hx-target="#set-pin-container" hx-swap="innerHTML">Change Pin</button>
+</div>
 <section id="children-section">
     <h3>Children</h3>
     <ul id="child-list" hx-trigger="refreshList from:body" hx-get="/child-list" hx-target="this">
