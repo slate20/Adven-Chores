@@ -12,6 +12,11 @@
     <body>
         <div class="app-container">
             <nav class="side-nav">
+                <button class="nav-toggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
                 <img class="logo" src="/static/logo.png" alt="Adven-Chores Logo">
                 <div id="child-nav" hx-get="/child-nav" hx-trigger="load, refreshList from:body">
                     <!-- This will be populated dynamically -->
@@ -43,6 +48,14 @@
                         firstChild.click();
                     }
                 }
+            });
+        </script>
+        <script>
+            const navToggle = document.querySelector('.nav-toggle');
+            const nav = document.querySelector('.side-nav');
+            
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('collapsed');
             });
         </script>
     </body>
