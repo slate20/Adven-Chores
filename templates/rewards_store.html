@@ -1,11 +1,13 @@
 <h2>Rewards Store for {{.Child.Name}}</h2>
-<p>Available points: {{.Child.Points}}</p>
-
+<br>
+<p>Available points: {{.Child.Points}}🎫</p>
+<br>
 <div class="rewards-grid">
     {{range .Rewards}}
         <div class="reward-card">
             <h3>{{.Description}}</h3>
-            <p>Price: {{.PointCost}} points</p>
+            <span>
+            <p>Price: {{.PointCost}}🎫</p>
             {{if ge $.Child.Points .PointCost}}
                 <button id="redeem-reward-btn"
                     hx-post="/redeem-reward/"
@@ -14,6 +16,7 @@
             {{else}}
                 <p>Not enough points</p>
             {{end}}
+            </span>
         </div>
     {{end}}
 </div>
