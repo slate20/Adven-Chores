@@ -6,38 +6,53 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/slate20/goauth"
 )
 
-var parentPin = "1234"
-
-func ParentPanelHandler(db *sql.DB) http.HandlerFunc {
+func ParentPanelHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// check for correct pin in Hx-Prompt header
-		pin := r.Header.Get("Hx-Prompt")
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		// get parent_pin from database users table
+		var parentPin int
+		err = db.QueryRow("SELECT parent_pin FROM users WHERE id = ?", userID).Scan(&parentPin)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// convert hx-prompt header to int and check if it matches parent_pin
+		pin, _ := strconv.Atoi(r.Header.Get("Hx-Prompt"))
 		if pin != parentPin {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, "Incorrect PIN", http.StatusUnauthorized)
 			return
 		}
 
-		children, err := models.GetAllChildren(db)
+		children, err := models.GetChildrenByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		chores, err := models.GetAllChores(db)
+		chores, err := models.GetChoresByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		assignments, err := models.GetAllAssignments(db)
+		assignments, err := models.GetAssignmentsByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		rewards, err := models.GetAllRewards(db)
+		rewards, err := models.GetRewardsByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -76,8 +91,14 @@ func ParentPanelHandler(db *sql.DB) http.HandlerFunc {
 }
 
 // function to handle set-pin form and set parentPin
-func SetPinHandler(db *sql.DB) http.HandlerFunc {
+func SetPinHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
 		log.Printf("SetPinHandler: method=%s", r.Method)
 		if r.Method == http.MethodGet {
 			tmpl, err := template.ParseFiles("../../templates/set_pin.html")
@@ -92,13 +113,18 @@ func SetPinHandler(db *sql.DB) http.HandlerFunc {
 				return
 			}
 		} else if r.Method == http.MethodPost {
-			pin := r.FormValue("pin")
-			parentPin = pin
+			// convert form input to int and save to database
+			pin, _ := strconv.Atoi(r.FormValue("pin"))
+			_, err = db.Exec("UPDATE users SET parent_pin = ? WHERE id = ?", pin, userID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
 			// Return the set-pin button
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(`<button id="set-pin-btn" hx-get="/set-pin" hx-target="#set-pin-container" hx-swap="innerHTML">Change Pin</button>`))
-			log.Printf("SetPinHandler: new pin set to %s", pin)
+			log.Printf("SetPinHandler: new pin set to %d", pin)
 		}
 	}
 }

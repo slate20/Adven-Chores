@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/slate20/goauth"
 )
 
@@ -106,4 +108,28 @@ func LogoutHandler() http.HandlerFunc {
 		})
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
+}
+
+func ExtractUserID(r *http.Request, auth *goauth.AuthService) (int, error) {
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		return 0, errors.New("Unauthorized")
+	}
+
+	token, err := auth.ValidateToken(cookie.Value)
+	if err != nil {
+		return 0, errors.New("invalid token")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, errors.New("invalid token claims")
+	}
+
+	userID, ok := claims["user_id"].(float64)
+	if !ok {
+		return 0, errors.New("invalid user ID")
+	}
+
+	return int(userID), nil
 }

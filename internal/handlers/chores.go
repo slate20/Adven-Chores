@@ -4,14 +4,23 @@ import (
 	"Adven-Chores/internal/models"
 	"database/sql"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/slate20/goauth"
 )
 
-func ChoreListHandler(db *sql.DB) http.HandlerFunc {
+func ChoreListHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		chores, err := models.GetAllChores(db)
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		chores, err := models.GetChoresByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -31,8 +40,14 @@ func ChoreListHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func AddChoreHandler(db *sql.DB) http.HandlerFunc {
+func AddChoreHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
 		if r.Method == http.MethodGet {
 			tmpl, err := template.ParseFiles("../../templates/add_chore.html")
 			if err != nil {
@@ -50,6 +65,7 @@ func AddChoreHandler(db *sql.DB) http.HandlerFunc {
 			isRequired := r.FormValue("is_required") == "on"
 
 			chore := &models.Chore{
+				UserID:      userID,
 				Description: description,
 				Points:      points,
 				IsRequired:  isRequired,
@@ -67,7 +83,7 @@ func AddChoreHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func EditChoreHandler(db *sql.DB) http.HandlerFunc {
+func EditChoreHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		paths := strings.Split(r.URL.Path, "/")
 		id, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
@@ -76,13 +92,27 @@ func EditChoreHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		if r.Method == http.MethodGet {
-			chore, err := models.GetChoreByID(db, id)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
 
+		chore, err := models.GetChoreByID(db, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check if the userID matches the chore's userID and return Unauthorized if not
+		log.Printf("Checking if userID=%d matches chore.UserID=%d", userID, chore.UserID)
+		if userID != chore.UserID {
+			log.Printf("userID=%d does not match chore.UserID=%d. Returning Unauthorized", userID, chore.UserID)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if r.Method == http.MethodGet {
 			tmpl, err := template.ParseFiles("../../templates/edit_chore.html")
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -95,16 +125,10 @@ func EditChoreHandler(db *sql.DB) http.HandlerFunc {
 				return
 			}
 		} else if r.Method == http.MethodPost {
-			description := r.FormValue("description")
-			points, _ := strconv.Atoi(r.FormValue("points"))
-			isRequired := r.FormValue("is_required") == "on"
+			chore.Description = r.FormValue("description")
+			chore.Points, _ = strconv.Atoi(r.FormValue("points"))
+			chore.IsRequired = r.FormValue("is_required") == "on"
 
-			chore := &models.Chore{
-				ID:          id,
-				Description: description,
-				Points:      points,
-				IsRequired:  isRequired,
-			}
 			err := chore.Save(db)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -118,10 +142,16 @@ func EditChoreHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func DeleteChoreHandler(db *sql.DB) http.HandlerFunc {
+func DeleteChoreHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -129,6 +159,20 @@ func DeleteChoreHandler(db *sql.DB) http.HandlerFunc {
 		id, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid chore ID", http.StatusBadRequest)
+			return
+		}
+
+		choreUserID, err := models.GetChoreByID(db, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check if the userID matches the chore's userID and return Unauthorized if not
+		log.Printf("Checking if userID=%d matches chore.UserID=%d", userID, choreUserID.UserID)
+		if userID != choreUserID.UserID {
+			log.Printf("userID=%d does not match chore.UserID=%d. Returning Unauthorized", userID, choreUserID.UserID)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -149,10 +193,16 @@ func ChoreActionHandler(db *sql.DB) http.HandlerFunc {
 
 // Functions related to chore assignments
 
-func AssignChoreHandler(db *sql.DB) http.HandlerFunc {
+func AssignChoreHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -165,6 +215,26 @@ func AssignChoreHandler(db *sql.DB) http.HandlerFunc {
 		choreID, err := strconv.ParseInt(r.FormValue("chore_id"), 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid chore ID", http.StatusBadRequest)
+			return
+		}
+
+		child, err := models.GetChildByID(db, childID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		chore, err := models.GetChoreByID(db, choreID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check if the userID matches the child's userID and the chore's userID and return Unauthorized if not
+		log.Printf("Checking if userID=%d matches child.UserID=%d and chore.UserID=%d", userID, childID, choreID)
+		if userID != child.UserID || userID != chore.UserID {
+			log.Printf("userID=%d does not match child.UserID=%d and chore.UserID=%d. Returning Unauthorized", userID, childID, choreID)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -181,21 +251,27 @@ func AssignChoreHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func AssignChoreFormHandler(db *sql.DB) http.HandlerFunc {
+func AssignChoreFormHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		children, err := models.GetAllChildren(db)
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		children, err := models.GetChildrenByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		chores, err := models.GetAllChores(db)
+		chores, err := models.GetChoresByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		assignments, err := models.GetAllAssignments(db)
+		assignments, err := models.GetAssignmentsByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -237,9 +313,15 @@ func AssignChoreFormHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func AssignmentsListHandler(db *sql.DB) http.HandlerFunc {
+func AssignmentsListHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		assignments, err := models.GetAllAssignments(db)
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		assignments, err := models.GetAssignmentsByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -266,10 +348,16 @@ func AssignmentActionHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func DeleteAssignmentHandler(db *sql.DB) http.HandlerFunc {
+func DeleteAssignmentHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -277,6 +365,18 @@ func DeleteAssignmentHandler(db *sql.DB) http.HandlerFunc {
 		assignmentID, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid assignment ID", http.StatusBadRequest)
+			return
+		}
+
+		assignment, err := models.GetAssignmentByID(db, assignmentID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// check if userID matches assignment.Chore.UserID and return Unauthorized if not
+		if userID != assignment.Chore.UserID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -288,10 +388,16 @@ func DeleteAssignmentHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func CompleteAssignmentHandler(db *sql.DB) http.HandlerFunc {
+func CompleteAssignmentHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -299,6 +405,18 @@ func CompleteAssignmentHandler(db *sql.DB) http.HandlerFunc {
 		assignmentID, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid assignment ID", http.StatusBadRequest)
+			return
+		}
+
+		assignment, err := models.GetAssignmentByID(db, assignmentID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// check if userID matches assignment.Chore.UserID and return Unauthorized if not
+		if userID != assignment.Chore.UserID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -314,10 +432,16 @@ func CompleteAssignmentHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func RewardAssignmentHandler(db *sql.DB) http.HandlerFunc {
+func RewardAssignmentHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -325,6 +449,18 @@ func RewardAssignmentHandler(db *sql.DB) http.HandlerFunc {
 		assignmentID, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid assignment ID", http.StatusBadRequest)
+			return
+		}
+
+		assignment, err := models.GetAssignmentByID(db, assignmentID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// check if userID matches assignment.Chore.UserID and return Unauthorized if not
+		if userID != assignment.Chore.UserID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -341,10 +477,16 @@ func RewardAssignmentHandler(db *sql.DB) http.HandlerFunc {
 }
 
 // function for child to accept a chore; takes in childID and choreID from the URL
-func AcceptChoreHandler(db *sql.DB) http.HandlerFunc {
+func AcceptChoreHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -358,6 +500,24 @@ func AcceptChoreHandler(db *sql.DB) http.HandlerFunc {
 		choreID, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid chore ID", http.StatusBadRequest)
+			return
+		}
+
+		child, err := models.GetChildByID(db, childID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		chore, err := models.GetChoreByID(db, choreID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// check if userID matches child.UserID and chore.UserID and return Unauthorized if not
+		if userID != child.UserID || userID != chore.UserID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 

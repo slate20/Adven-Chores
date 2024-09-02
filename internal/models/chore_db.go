@@ -10,8 +10,8 @@ import (
 func (c *Chore) Save(db *sql.DB) error {
 	// If the chore is new, insert it
 	if c.ID == 0 {
-		result, err := db.Exec("INSERT INTO chores (description, points, is_required) VALUES (?, ?, ?)",
-			c.Description, c.Points, c.IsRequired)
+		result, err := db.Exec("INSERT INTO chores (user_id, description, points, is_required) VALUES (?, ?, ?, ?)",
+			c.UserID, c.Description, c.Points, c.IsRequired)
 		if err != nil {
 			return err
 		}
@@ -22,8 +22,8 @@ func (c *Chore) Save(db *sql.DB) error {
 		}
 	} else {
 		// If the chore is not new, update it
-		_, err := db.Exec("UPDATE chores SET description = ?, points = ?, is_required = ? WHERE id = ?",
-			c.Description, c.Points, c.IsRequired, c.ID)
+		_, err := db.Exec("UPDATE chores SET description = ?, points = ?, is_required = ? WHERE id = ? AND user_id = ?",
+			c.Description, c.Points, c.IsRequired, c.ID, c.UserID)
 		if err != nil {
 			return err
 		}
@@ -33,11 +33,11 @@ func (c *Chore) Save(db *sql.DB) error {
 
 // function to get a chore by ID from the database
 func GetChoreByID(db *sql.DB, id int64) (*Chore, error) {
-	query := "SELECT id, description, points, is_required FROM chores WHERE id = ?"
+	query := "SELECT id, user_id, description, points, is_required FROM chores WHERE id = ?"
 	row := db.QueryRow(query, id)
 
 	chore := &Chore{}
-	err := row.Scan(&chore.ID, &chore.Description, &chore.Points, &chore.IsRequired)
+	err := row.Scan(&chore.ID, &chore.UserID, &chore.Description, &chore.Points, &chore.IsRequired)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("no chore found with ID %d", id)
@@ -80,6 +80,32 @@ func GetAllChores(db *sql.DB) ([]*Chore, error) {
 	}
 
 	log.Printf("Found %d chores", len(chores))
+
+	return chores, nil
+}
+
+// function to get chores by user ID from the database
+func GetChoresByUserID(db *sql.DB, userID int) ([]*Chore, error) {
+	var chores []*Chore
+
+	rows, err := db.Query("SELECT id, description, points, is_required FROM chores WHERE user_id = ?", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		chore := &Chore{}
+		err := rows.Scan(&chore.ID, &chore.Description, &chore.Points, &chore.IsRequired)
+		if err != nil {
+			return nil, err
+		}
+		chores = append(chores, chore)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return chores, nil
 }

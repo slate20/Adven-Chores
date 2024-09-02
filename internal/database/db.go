@@ -59,6 +59,7 @@ func initTables() {
 		username TEXT UNIQUE NOT NULL,
 		email TEXT UNIQUE NOT NULL,
 		password_hash TEXT NOT NULL,
+		parent_pin INTEGER NOT NULL DEFAULT 1234,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
@@ -98,6 +99,7 @@ func initTables() {
 	createChoresTable := `
 	CREATE TABLE IF NOT EXISTS chores (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		description TEXT NOT NULL,
 		points INTEGER NOT NULL,
 		is_required BOOLEAN NOT NULL,
@@ -112,6 +114,7 @@ func initTables() {
 	createChildrenTable := `
 	CREATE TABLE IF NOT EXISTS children (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		name TEXT NOT NULL,
 		job TEXT NOT NULL,
 		rewards STRING,
@@ -126,6 +129,7 @@ func initTables() {
 	createAssignmentsTable := `
 	CREATE TABLE IF NOT EXISTS assignments (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		chore_id INTEGER,
 		child_id INTEGER,
 		is_completed BOOLEAN,
@@ -141,6 +145,7 @@ func initTables() {
 	createRewardsTable := `
 	CREATE TABLE IF NOT EXISTS rewards (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		description TEXT NOT NULL,
 		point_cost INTEGER NOT NULL
 	);`

@@ -2,6 +2,7 @@ package models
 
 type Chore struct {
 	ID          int64
+	UserID      int
 	Description string
 	Points      int
 	IsRequired  bool
@@ -10,6 +11,7 @@ type Chore struct {
 
 type Child struct {
 	ID      int64
+	UserID  int
 	Name    string
 	Job     string
 	Points  int
@@ -17,12 +19,14 @@ type Child struct {
 }
 type Reward struct {
 	ID          int64
+	UserID      int
 	Description string
 	PointCost   int
 }
 
 type Assignment struct {
 	ID          int64
+	ChoreID     int64
 	ChildID     int64
 	ChildName   string
 	IsCompleted bool
