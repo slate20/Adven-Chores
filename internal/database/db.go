@@ -52,6 +52,49 @@ func InitDB() (*sql.DB, error) {
 
 func initTables() {
 	// Create the tables
+
+	createUsersTable := `
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		username TEXT UNIQUE NOT NULL,
+		email TEXT UNIQUE NOT NULL,
+		password_hash TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	_, err := DB.Exec(createUsersTable)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createPasswordResetTokensTable := `
+	CREATE TABLE IF NOT EXISTS password_reset_tokens (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		token TEXT NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES users(id)
+	);`
+
+	_, err = DB.Exec(createPasswordResetTokensTable)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createSecurityQuestionsTable := `
+	CREATE TABLE IF NOT EXISTS security_questions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		question TEXT NOT NULL,
+		answer_hash TEXT NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES users(id)
+	);`
+
+	_, err = DB.Exec(createSecurityQuestionsTable)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	createChoresTable := `
 	CREATE TABLE IF NOT EXISTS chores (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +104,7 @@ func initTables() {
 		is_completed BOOLEAN NOT NULL DEFAULT 0
 	);`
 
-	_, err := DB.Exec(createChoresTable)
+	_, err = DB.Exec(createChoresTable)
 	if err != nil {
 		log.Fatal(err)
 	}

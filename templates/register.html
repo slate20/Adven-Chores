@@ -1,0 +1,10 @@
+{{define "content"}}
+<h2>Register</h2>
+<form hx-post="/register" hx-redirect="/login">
+    <input type="text" name="username" placeholder="Username" required><br>
+    <input type="email" name="email" placeholder="Email" required><br>
+    <input type="password" name="password" placeholder="Password" required><br>
+    <input type="submit" value="Register">
+</form>
+<a href="/login">Already have an account? Login here</a>
+{{end}}
