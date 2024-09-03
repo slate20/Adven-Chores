@@ -1,6 +1,6 @@
 {{define "content"}}
 <h2>Register</h2>
-<form class="auth-form" action="/login" method="post">
+<form class="auth-form" action="/register" method="post">
     <div class="form-group">
         <label for="username">Username:</label>
         <input type="text" name="username" placeholder="Username" required><br>
@@ -13,7 +13,7 @@
         <label for="password">Password:</label>
         <input type="password" name="password" placeholder="Password" required><br>
     </div>
-    <button type="submit" class="auth-button">Login</button>
+    <button type="submit" class="auth-button">Register</button>
 </form>
 <p class="auth-link">Already have an account? <a href="/login">Login here</a></p>
 {{end}}
