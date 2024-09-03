@@ -1,9 +1,15 @@
 {{define "content"}}
-<h2>Login</h2>
-<form action="/login" method="post">
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <input type="submit" value="Login">
+<h2>Login to Adven-Chores</h2>
+<form class="auth-form" action="/login" method="post">
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" name="username" placeholder="Username" required><br>
+    </div>
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" name="password" placeholder="Password" required><br>
+    </div>
+    <button type="submit" class="auth-button">Login</button>
 </form>
-<a href="/register">Don't have an account? Register here</a>
+<p class="auth-link">Don't have an account? <a href="/register">Register here</a></p>
 {{end}}
