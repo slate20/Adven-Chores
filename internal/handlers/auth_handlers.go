@@ -50,14 +50,33 @@ func RegisterHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 			username := r.FormValue("username")
 			email := r.FormValue("email")
 			password := r.FormValue("password")
+			confirmPassword := r.FormValue("confirm-password")
 
-			err := auth.Register(username, email, password)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+			// Check if passwords match
+			if password != confirmPassword {
+				if r.Header.Get("HX-Request") == "true" {
+					w.Write([]byte("<div class='error-message'>Passwords do not match</div>"))
+				} else {
+					http.Error(w, "Passwords do not match", http.StatusBadRequest)
+				}
 				return
 			}
 
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			err := auth.Register(username, email, password)
+			if err != nil {
+				if r.Header.Get("HX-Request") == "true" {
+					w.Write([]byte("<div class='error-message'>" + err.Error() + "</div>"))
+				} else {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+				}
+				return
+			}
+
+			if r.Header.Get("HX-Request") == "true" {
+				w.Header().Set("HX-Redirect", "/login")
+			} else {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+			}
 			return
 		}
 
