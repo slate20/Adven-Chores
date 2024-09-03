@@ -1,0 +1,19 @@
+{{define "content"}}
+<h2>Register</h2>
+<form class="auth-form" action="/login" method="post">
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" name="username" placeholder="Username" required><br>
+    </div>
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" name="email" placeholder="Email" required><br>
+    </div>
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" name="password" placeholder="Password" required><br>
+    </div>
+    <button type="submit" class="auth-button">Login</button>
+</form>
+<p class="auth-link">Already have an account? <a href="/login">Login here</a></p>
+{{end}}

@@ -292,6 +292,11 @@ ul li {
     color: #09334e;
 }
 
+#content .back-button {
+    background-color: #b9b9b9 !important;
+    color: #222;
+}
+
 /* Rewards store styles */
 .rewards-grid {
     display: grid;

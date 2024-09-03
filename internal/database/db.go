@@ -52,16 +52,61 @@ func InitDB() (*sql.DB, error) {
 
 func initTables() {
 	// Create the tables
+
+	createUsersTable := `
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		username TEXT UNIQUE NOT NULL,
+		email TEXT UNIQUE NOT NULL,
+		password_hash TEXT NOT NULL,
+		parent_pin INTEGER NOT NULL DEFAULT 1234,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	_, err := DB.Exec(createUsersTable)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createPasswordResetTokensTable := `
+	CREATE TABLE IF NOT EXISTS password_reset_tokens (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		token TEXT NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES users(id)
+	);`
+
+	_, err = DB.Exec(createPasswordResetTokensTable)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createSecurityQuestionsTable := `
+	CREATE TABLE IF NOT EXISTS security_questions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+		question TEXT NOT NULL,
+		answer_hash TEXT NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES users(id)
+	);`
+
+	_, err = DB.Exec(createSecurityQuestionsTable)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	createChoresTable := `
 	CREATE TABLE IF NOT EXISTS chores (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		description TEXT NOT NULL,
 		points INTEGER NOT NULL,
 		is_required BOOLEAN NOT NULL,
 		is_completed BOOLEAN NOT NULL DEFAULT 0
 	);`
 
-	_, err := DB.Exec(createChoresTable)
+	_, err = DB.Exec(createChoresTable)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,6 +114,7 @@ func initTables() {
 	createChildrenTable := `
 	CREATE TABLE IF NOT EXISTS children (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		name TEXT NOT NULL,
 		job TEXT NOT NULL,
 		rewards STRING,
@@ -83,6 +129,7 @@ func initTables() {
 	createAssignmentsTable := `
 	CREATE TABLE IF NOT EXISTS assignments (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		chore_id INTEGER,
 		child_id INTEGER,
 		is_completed BOOLEAN,
@@ -98,6 +145,7 @@ func initTables() {
 	createRewardsTable := `
 	CREATE TABLE IF NOT EXISTS rewards (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
 		description TEXT NOT NULL,
 		point_cost INTEGER NOT NULL
 	);`

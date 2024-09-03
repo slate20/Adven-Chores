@@ -10,11 +10,19 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/slate20/goauth"
 )
 
-func RewardListHandler(db *sql.DB) http.HandlerFunc {
+func RewardListHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rewards, err := models.GetAllRewards(db)
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		rewards, err := models.GetRewardsByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -34,8 +42,14 @@ func RewardListHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func AddRewardHandler(db *sql.DB) http.HandlerFunc {
+func AddRewardHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
 		if r.Method == http.MethodGet {
 			tmpl, err := template.ParseFiles("../../templates/add_reward.html")
 			if err != nil {
@@ -53,6 +67,7 @@ func AddRewardHandler(db *sql.DB) http.HandlerFunc {
 			pointCost, _ := strconv.Atoi(r.FormValue("point-cost"))
 
 			reward := &models.Reward{
+				UserID:      userID,
 				Description: description,
 				PointCost:   pointCost,
 			}
@@ -70,12 +85,30 @@ func AddRewardHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func EditRewardHandler(db *sql.DB) http.HandlerFunc {
+func EditRewardHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		paths := strings.Split(r.URL.Path, "/")
 		id, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid reward ID", http.StatusBadRequest)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		reward, err := models.GetRewardByID(db, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check if the reward belongs to the user
+		if userID != reward.UserID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -98,14 +131,8 @@ func EditRewardHandler(db *sql.DB) http.HandlerFunc {
 				return
 			}
 		} else if r.Method == http.MethodPost {
-			description := r.FormValue("description")
-			pointCost, _ := strconv.Atoi(r.FormValue("point-cost"))
-
-			reward := &models.Reward{
-				ID:          id,
-				Description: description,
-				PointCost:   pointCost,
-			}
+			reward.Description = r.FormValue("description")
+			reward.PointCost, _ = strconv.Atoi(r.FormValue("point-cost"))
 
 			err := reward.Save(db)
 			if err != nil {
@@ -120,10 +147,16 @@ func EditRewardHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func DeleteRewardHandler(db *sql.DB) http.HandlerFunc {
+func DeleteRewardHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			return
+		}
+
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -131,6 +164,18 @@ func DeleteRewardHandler(db *sql.DB) http.HandlerFunc {
 		id, err := strconv.ParseInt(paths[len(paths)-1], 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid reward ID", http.StatusBadRequest)
+			return
+		}
+
+		reward, err := models.GetRewardByID(db, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check if the reward belongs to the user
+		if userID != reward.UserID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -149,11 +194,16 @@ func RewardActionHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func RewardsStoreHandler(db *sql.DB) http.HandlerFunc {
+func RewardsStoreHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract childID from URL
 		paths := strings.Split(r.URL.Path, "/")
 		childIDStr := paths[len(paths)-1]
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
 
 		childID, err := strconv.ParseInt(childIDStr, 10, 64)
 		if err != nil {
@@ -167,7 +217,7 @@ func RewardsStoreHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		rewards, err := models.GetAllRewards(db)
+		rewards, err := models.GetRewardsByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -200,8 +250,14 @@ func RewardsStoreHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func RedeemRewardHandler(db *sql.DB) http.HandlerFunc {
+func RedeemRewardHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
 		childID, err := strconv.ParseInt(r.FormValue("child_id"), 10, 64)
 		if err != nil {
 			log.Printf("Error: Invalid child ID: %v", err)
@@ -227,6 +283,13 @@ func RedeemRewardHandler(db *sql.DB) http.HandlerFunc {
 		if err != nil {
 			log.Printf("Error: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Check if userID matches child.UserID and reward.UserID and return unauthorized if not
+		if userID != child.UserID || userID != reward.UserID {
+			log.Printf("Error: Unauthorized")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 

@@ -1,0 +1,141 @@
+/* public_styles.css */
+body {
+    font-family: 'Fredoka', sans-serif;
+    background-color: #e1f1ff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+h1 {
+    font-family: 'Bubblegum Sans', sans-serif;
+    color: #09334e;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 36px;
+}
+
+.public-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-logo {
+    display: block;
+    width: 260px;
+    margin: 0 auto 30px;
+}
+
+h2 {
+    font-family: 'Bubblegum Sans', sans-serif;
+    color: #2b99e2;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 28px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-group {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #124b72;
+    font-size: 16px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #c7e8fd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: #2b99e2;
+    outline: none;
+}
+
+.auth-button {
+    width: 100px;
+    background-color: #ebb400;
+    color: #09334e;
+    font-family: 'Bubblegum Sans', sans-serif;
+    font-size: 18px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+}
+
+.auth-button:hover {
+    background-color: #fccb2c;
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #124b72;
+}
+
+.auth-link a {
+    color: #2b99e2;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.landing-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 20px;
+    color: #222;
+}
+
+.landing-link a {
+    color: #2b99e2;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.landing-link a:hover {
+    text-decoration: underline;
+    color: #61b7f0;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .public-container {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    .auth-logo {
+        width: 150px;
+    }
+}

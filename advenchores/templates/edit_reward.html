@@ -1,0 +1,8 @@
+<h4>Edit Reward</h4>
+<form hx-post="/edit-reward/{{.ID}}" hx-target="#reward-action-container" hx-swap="innerHTML">
+    <label for="description">Description:</label>
+    <input type="text" id="description" name="description" value="{{.Description}}" required>
+    <label for="point-cost">Points Cost:</label>
+    <input type="number" id="point-cost" name="point-cost" value="{{.PointCost}}" required>
+    <button type="submit">Update Reward</button>
+    <button type="button" hx-get="/reward-action" hx-target="#reward-action-container" hx-swap="innerHTML">Cancel</button>

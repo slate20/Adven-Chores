@@ -9,8 +9,8 @@ import (
 func (a *Assignment) Save(db *sql.DB) error {
 	// If the assignment is new, insert it
 	if a.ID == 0 {
-		result, err := db.Exec("INSERT INTO assignments (child_id, chore_id, is_completed) VALUES (?, ?, ?)",
-			a.ChildID, a.Chore.ID, a.IsCompleted)
+		result, err := db.Exec("INSERT INTO assignments (user_id, child_id, chore_id, is_completed) VALUES (?, ?, ?, ?)",
+			a.Chore.UserID, a.ChildID, a.Chore.ID, a.IsCompleted)
 		if err != nil {
 			return err
 		}
@@ -21,8 +21,8 @@ func (a *Assignment) Save(db *sql.DB) error {
 		}
 	} else {
 		// If the assignment is not new, update it
-		_, err := db.Exec("UPDATE assignments SET child_id = ?, chore_id = ?, is_completed = ? WHERE id = ?",
-			a.ChildID, a.Chore.ID, a.IsCompleted, a.ID)
+		_, err := db.Exec("UPDATE assignments SET child_id = ?, chore_id = ?, is_completed = ? WHERE id = ? AND user_id = ?",
+			a.ChildID, a.Chore.ID, a.IsCompleted, a.ID, a.Chore.UserID)
 		if err != nil {
 			return err
 		}
@@ -32,11 +32,11 @@ func (a *Assignment) Save(db *sql.DB) error {
 
 // function to retrieve an assignment by ID from the database
 func GetAssignmentByID(db *sql.DB, id int64) (*Assignment, error) {
-	query := "SELECT id, child_id, chore_id, is_completed FROM assignments WHERE id = ?"
+	query := "SELECT id, user_id, child_id, chore_id, is_completed FROM assignments WHERE id = ?"
 	row := db.QueryRow(query, id)
 
 	assignment := &Assignment{Chore: &Chore{}}
-	err := row.Scan(&assignment.ID, &assignment.ChildID, &assignment.Chore.ID, &assignment.IsCompleted)
+	err := row.Scan(&assignment.ID, &assignment.Chore.UserID, &assignment.ChildID, &assignment.Chore.ID, &assignment.IsCompleted)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("no assignment found with ID %d", id)
@@ -57,6 +57,48 @@ func GetAllAssignments(db *sql.DB) ([]*Assignment, error) {
 		`
 
 	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get assignments: %v", err)
+	}
+	defer rows.Close()
+
+	var assignments []*Assignment
+	for rows.Next() {
+		a := &Assignment{Chore: &Chore{}}
+		err := rows.Scan(
+			&a.ID,
+			&a.ChildID,
+			&a.ChildName,
+			&a.Chore.ID,
+			&a.Chore.Description,
+			&a.Chore.Points,
+			&a.Chore.IsRequired,
+			&a.IsCompleted,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %v", err)
+		}
+		assignments = append(assignments, a)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate rows: %v", err)
+	}
+
+	return assignments, nil
+}
+
+// function to get assignments by user ID
+func GetAssignmentsByUserID(db *sql.DB, userID int) ([]*Assignment, error) {
+	query := `
+		SELECT a.id, a.child_id, ch.name, c.id, c.description, c.points, c.is_required, a.is_completed
+		FROM assignments a
+		JOIN chores c ON a.chore_id = c.id
+		JOIN children ch ON a.child_id = ch.id
+		WHERE ch.user_id = ?
+		`
+
+	rows, err := db.Query(query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get assignments: %v", err)
 	}

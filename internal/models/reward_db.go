@@ -9,8 +9,8 @@ import (
 func (r *Reward) Save(db *sql.DB) error {
 	// If the reward is new, insert it
 	if r.ID == 0 {
-		result, err := db.Exec("INSERT INTO rewards (description, point_cost) VALUES (?, ?)",
-			r.Description, r.PointCost)
+		result, err := db.Exec("INSERT INTO rewards (user_id, description, point_cost) VALUES (?, ?, ?)",
+			r.UserID, r.Description, r.PointCost)
 		if err != nil {
 			return err
 		}
@@ -21,8 +21,8 @@ func (r *Reward) Save(db *sql.DB) error {
 		}
 	} else {
 		// If the reward is not new, update it
-		_, err := db.Exec("UPDATE rewards SET description = ?, point_cost = ? WHERE id = ?",
-			r.Description, r.PointCost, r.ID)
+		_, err := db.Exec("UPDATE rewards SET description = ?, point_cost = ? WHERE id = ? AND user_id = ?",
+			r.Description, r.PointCost, r.ID, r.UserID)
 		if err != nil {
 			return err
 		}
@@ -32,11 +32,11 @@ func (r *Reward) Save(db *sql.DB) error {
 
 // function to get a reward by ID from the database
 func GetRewardByID(db *sql.DB, id int64) (*Reward, error) {
-	query := "SELECT id, description, point_cost FROM rewards WHERE id = ?"
+	query := "SELECT id, user_id, description, point_cost FROM rewards WHERE id = ?"
 	row := db.QueryRow(query, id)
 
 	reward := &Reward{}
-	err := row.Scan(&reward.ID, &reward.Description, &reward.PointCost)
+	err := row.Scan(&reward.ID, &reward.UserID, &reward.Description, &reward.PointCost)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("no reward found with ID %d", id)
@@ -51,6 +51,30 @@ func GetRewardByID(db *sql.DB, id int64) (*Reward, error) {
 func GetAllRewards(db *sql.DB) ([]*Reward, error) {
 	query := "SELECT id, description, point_cost FROM rewards"
 	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var rewards []*Reward
+	for rows.Next() {
+		reward := &Reward{}
+		err := rows.Scan(&reward.ID, &reward.Description, &reward.PointCost)
+		if err != nil {
+			return nil, err
+		}
+		rewards = append(rewards, reward)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return rewards, nil
+}
+
+// function to get rewards by user ID from the database
+func GetRewardsByUserID(db *sql.DB, userID int) ([]*Reward, error) {
+	query := "SELECT id, description, point_cost FROM rewards WHERE user_id = ?"
+	rows, err := db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -5,11 +5,19 @@ import (
 	"database/sql"
 	"html/template"
 	"net/http"
+
+	"github.com/slate20/goauth"
 )
 
-func ChildNavHandler(db *sql.DB) http.HandlerFunc {
+func ChildNavHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		children, err := models.GetAllChildren(db)
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		children, err := models.GetChildrenByUserID(db, userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
