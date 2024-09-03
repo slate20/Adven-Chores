@@ -34,7 +34,7 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../../static"))))
 
 	// Public routes
-	http.HandleFunc("/", handlers.LandingHandler())
+	http.HandleFunc("/", handlers.LandingHandler(auth))
 	http.HandleFunc("/register", handlers.RegisterHandler(db, auth))
 	http.HandleFunc("/login", handlers.LoginHandler(db, auth))
 	http.HandleFunc("/logout", handlers.LogoutHandler())

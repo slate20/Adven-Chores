@@ -11,8 +11,17 @@ import (
 	"github.com/slate20/goauth"
 )
 
-func LandingHandler() http.HandlerFunc {
+func LandingHandler(auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth_token")
+		if err == nil {
+			_, err = auth.ValidateToken(cookie.Value)
+			if err == nil {
+				http.Redirect(w, r, "/home", http.StatusSeeOther)
+				return
+			}
+		}
+
 		tmpl, err := template.ParseFiles("../../templates/public_layout.html", "../../templates/landing.html")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -28,6 +37,15 @@ func LandingHandler() http.HandlerFunc {
 
 func RegisterHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth_token")
+		if err == nil {
+			_, err = auth.ValidateToken(cookie.Value)
+			if err == nil {
+				http.Redirect(w, r, "/home", http.StatusSeeOther)
+				return
+			}
+		}
+
 		if r.Method == http.MethodPost {
 			username := r.FormValue("username")
 			email := r.FormValue("email")
@@ -58,6 +76,15 @@ func RegisterHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 
 func LoginHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth_token")
+		if err == nil {
+			_, err = auth.ValidateToken(cookie.Value)
+			if err == nil {
+				http.Redirect(w, r, "/home", http.StatusSeeOther)
+				return
+			}
+		}
+
 		if r.Method == http.MethodPost {
 			username := r.FormValue("username")
 			password := r.FormValue("password")
