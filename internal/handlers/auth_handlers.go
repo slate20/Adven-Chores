@@ -129,7 +129,7 @@ func LoginHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 			if err != nil {
 				log.Println("Login failed:", err)
 				if r.Header.Get("HX-Request") == "true" {
-					w.Write([]byte("<div id='error-message'>Invalid username or password</div>"))
+					w.Write([]byte("<div id='error-message'>" + err.Error() + "</div>"))
 				} else {
 					http.Error(w, err.Error(), http.StatusUnauthorized)
 				}
