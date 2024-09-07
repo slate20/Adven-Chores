@@ -1,6 +1,6 @@
 {{define "content"}}
 <h2>Register</h2>
-<form class="auth-form" action="/register" method="post">
+<form class="auth-form" hx-post="/register" hx-target="#error-message" hx-swap="outerHTML">
     <div class="form-group">
         <label for="username">Username:</label>
         <input type="text" name="username" placeholder="Username" required><br>
@@ -13,6 +13,11 @@
         <label for="password">Password:</label>
         <input type="password" name="password" placeholder="Password" required><br>
     </div>
+    <div class="form-group">
+        <label for="confirm-password">Confirm Password:</label>
+        <input type="password" name="confirm-password" placeholder="Confirm Password" required><br>
+    </div>
+    <div id="error-message"></div>
     <button type="submit" class="auth-button">Register</button>
 </form>
 <p class="auth-link">Already have an account? <a href="/login">Login here</a></p>

@@ -50,14 +50,49 @@ func RegisterHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 			username := r.FormValue("username")
 			email := r.FormValue("email")
 			password := r.FormValue("password")
+			confirmPassword := r.FormValue("confirm-password")
 
-			err := auth.Register(username, email, password)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+			// Check if passwords match
+			if password != confirmPassword {
+				if r.Header.Get("HX-Request") == "true" {
+					w.Write([]byte("<div id='error-message'>Passwords do not match</div>"))
+				} else {
+					http.Error(w, "Passwords do not match", http.StatusBadRequest)
+				}
 				return
 			}
 
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			// Check if user already exists
+			var userexists bool
+			err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ? OR email = ?)", username, email).Scan(&userexists)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if userexists {
+				if r.Header.Get("HX-Request") == "true" {
+					w.Write([]byte("<div id='error-message'>A user already exists with that username or email</div>"))
+				} else {
+					http.Error(w, "A user already exists with that username or email", http.StatusBadRequest)
+				}
+				return
+			}
+
+			err := auth.Register(username, email, password)
+			if err != nil {
+				if r.Header.Get("HX-Request") == "true" {
+					w.Write([]byte("<div class='error-message'>" + err.Error() + "</div>"))
+				} else {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+				}
+				return
+			}
+
+			if r.Header.Get("HX-Request") == "true" {
+				w.Header().Set("HX-Redirect", "/login")
+			} else {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+			}
 			return
 		}
 
@@ -88,13 +123,16 @@ func LoginHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 		if r.Method == http.MethodPost {
 			username := r.FormValue("username")
 			password := r.FormValue("password")
-
 			log.Println("Login attempt:", username)
 
 			token, err := auth.Login(username, password)
 			if err != nil {
 				log.Println("Login failed:", err)
-				http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+				if r.Header.Get("HX-Request") == "true" {
+					w.Write([]byte("<div id='error-message'>" + err.Error() + "</div>"))
+				} else {
+					http.Error(w, err.Error(), http.StatusUnauthorized)
+				}
 				return
 			}
 
@@ -106,7 +144,11 @@ func LoginHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 				HttpOnly: true,
 			})
 
-			http.Redirect(w, r, "/home", http.StatusSeeOther)
+			if r.Header.Get("HX-Request") == "true" {
+				w.Header().Set("HX-Redirect", "/home")
+			} else {
+				http.Redirect(w, r, "/home", http.StatusSeeOther)
+			}
 			return
 		}
 
