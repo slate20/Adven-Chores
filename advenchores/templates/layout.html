@@ -25,9 +25,12 @@
                 <a class="nav-item" id="logout-button" href="/logout">Logout</a>
             </nav>
             <main id="content">
-                <h2 text-align="center">Welcome to Adven-Chores!</h2>
-                <h3 id="landing-text" text-align="center" >Add a child or select a name from the list to begin</h3>
-                <!-- Content will be loaded here-->
+                {{if .HasChildren}}
+                    <div hx-get="/child-dashboard/{{.FirstChildID}}" hx-trigger="load" hx-swap="innerHTML"></div>
+                {{else}}
+                    <h2 text-align="center">Welcome to Adven-Chores!</h2>
+                    <h3 id="landing-text" text-align="center" >Sign in to the parent panel to begin. The default PIN is 1234 and can be changed by clicking the "Change Pin" button</h3>
+                {{end}}
             </main>
         </div>
 
@@ -48,6 +51,13 @@
             
             navToggle.addEventListener('click', () => {
                 nav.classList.toggle('collapsed');
+            });
+        </script>
+        <script>
+            document.body.addEventListener('htmx:afterSwap', function(event) {
+                if (event.detail.target.id === 'content') {
+                    history.pushState(null, '', '/');
+                }
             });
         </script>
     </body>
