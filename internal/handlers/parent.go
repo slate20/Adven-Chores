@@ -128,3 +128,33 @@ func SetPinHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
 		}
 	}
 }
+
+// Handler for account settings page
+func AccountSettingsHandler(db *sql.DB, auth *goauth.AuthService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := ExtractUserID(r, auth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		user := &models.User{}
+		err = db.QueryRow("SELECT id, username, email, parent_pin FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email, &user.ParentPin)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tmpl, err := template.ParseFiles("../../templates/account_settings.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = tmpl.Execute(w, user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}

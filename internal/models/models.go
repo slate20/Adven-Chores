@@ -1,5 +1,12 @@
 package models
 
+type User struct {
+	ID        int
+	Username  string
+	Email     string
+	ParentPin int
+}
+
 type Chore struct {
 	ID          int64
 	UserID      int

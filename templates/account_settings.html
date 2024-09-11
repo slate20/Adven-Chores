@@ -1,0 +1,24 @@
+<h2>Account Settings</h2>
+<section id="credentials-section">
+    <!-- Show user details -->
+    <h3>User Details</h3>
+    <ul>
+        <li>Username: {{.Username}}
+            <span>
+                <button id="complete-chore-btn">Change</button>
+            </span>
+        </li>
+        <li>Email: {{.Email}}
+            <span>
+                <button id="complete-chore-btn">Change</button>
+            </span>
+        </li>
+        <li>Parent Pin: {{.ParentPin}}</li>
+    </ul>
+
+    <!-- Add button and form to set a new password -->
+    <div id="set-password-form">
+        <button hx-get="/set-password" hx-target="#credentials-section" hx-swap="outerHTML">Change Password</button>
+    </div>
+</section>
+

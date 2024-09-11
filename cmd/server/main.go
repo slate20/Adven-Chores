@@ -41,6 +41,7 @@ func main() {
 
 	// Protected routes
 	http.HandleFunc("/home", authMiddleware(handlers.HomeHandler(db, auth)))
+	http.HandleFunc("/account", authMiddleware(handlers.AccountSettingsHandler(db, auth)))
 	http.HandleFunc("/child-nav", authMiddleware(handlers.ChildNavHandler(db, auth)))
 	http.HandleFunc("/child-list", authMiddleware(handlers.ChildListHandler(db, auth)))
 	http.HandleFunc("/chore-list", authMiddleware(handlers.ChoreListHandler(db, auth)))
