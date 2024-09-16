@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Adven-Chores</title>
         <link rel="stylesheet" href="/static/styles.css">
+        <link rel="manifest" href="/static/manifest.json">
         <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
         <script src="https://unpkg.com/htmx.org@2.0.1"></script>
         <!-- <script>htmx.logAll();</script> -->
@@ -22,6 +23,7 @@
                     <!-- This will be populated dynamically -->
                 </div>
                 <a class="nav-item" id="parent-panel" hx-prompt="Enter Pin" href="#" hx-get="/parent-panel" hx-target="#content" hx-swap="innerHTML">Parent Panel</a>
+                <a class="nav-item" id="account-settings" hx-prompt="Enter Pin" href="#" hx-get="/account" hx-target="#content" hx-swap="innerHTML">Account</a>
                 <a class="nav-item" id="logout-button" href="/logout">Logout</a>
             </nav>
             <main id="content">

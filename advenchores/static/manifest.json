@@ -1,0 +1,20 @@
+{
+    "short_name": "AdvenChores",
+    "name": "Adven-Chores",
+    "description": "Gamify your family's chores with Adven-Chores!",
+    "icons": [
+        {
+            "src": "/static/advenchores_launcher.png",
+            "sizes": "64x64",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f0f0f0",
+    "theme_color": "#4CAF50",
+    "categories": ["productivity", "lifestyle", "family", "kids"],
+    "orientation": "any",
+    "prefer_related_applications": false
+}
